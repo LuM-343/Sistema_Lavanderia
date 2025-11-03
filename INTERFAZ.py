@@ -51,7 +51,51 @@ def abrir_clientes():
     ttk.Button(ventana_clientes, text="⬅ Volver al menú principal", command=volver).pack(pady=15)
 
 def abrir_lavadas():
-    messagebox.showinfo("Lavadas", "Módulo en construcción.")
+    ventana.withdraw()
+    ventana_lavadas = tk.Toplevel()
+    ventana_lavadas.title("Registro de Lavadas")
+    ventana_lavadas.state('zoomed')
+
+    ttk.Label(ventana_lavadas, text="Registro de Lavadas", font=("Arial", 18, "bold")).pack(pady=15)
+
+    marco = ttk.Frame(ventana_lavadas)
+    marco.pack(pady=10)
+
+    ttk.Label(marco, text="Cliente:").grid(row=0, column=0, padx=5, pady=5)
+    cliente = ttk.Entry(marco, width=40)
+    cliente.grid(row=0, column=1, padx=5, pady=5)
+
+    ttk.Label(marco, text="Tipo de lavada:").grid(row=1, column=0, padx=5, pady=5)
+    tipo = ttk.Combobox(marco, values=["Normal", "Rápida", "Especial"], width=37)
+    tipo.grid(row=1, column=1, padx=5, pady=5)
+
+    ttk.Label(marco, text="Costo (Q):").grid(row=2, column=0, padx=5, pady=5)
+    costo = ttk.Entry(marco, width=40)
+    costo.grid(row=2, column=1, padx=5, pady=5)
+
+    def registrar():
+        if not cliente.get() or not tipo.get() or not costo.get():
+            messagebox.showwarning("Atención", "Complete todos los campos.")
+            return
+        tree.insert("", "end", values=(cliente.get(), tipo.get(), costo.get()))
+        messagebox.showinfo("Éxito", "Lavada registrada correctamente.")
+        cliente.delete(0, tk.END)
+        tipo.set("")
+        costo.delete(0, tk.END)
+
+    ttk.Button(marco, text="Registrar", command=registrar).grid(row=3, columnspan=2, pady=10)
+
+    tree = ttk.Treeview(ventana_lavadas, columns=("Cliente", "Tipo", "Costo"), show="headings", height=15)
+    tree.heading("Cliente", text="Cliente")
+    tree.heading("Tipo", text="Tipo de Lavada")
+    tree.heading("Costo", text="Costo (Q)")
+    tree.pack(padx=20, pady=20, fill=tk.BOTH, expand=True)
+
+    def volver():
+        ventana_lavadas.destroy()
+        ventana.deiconify()
+
+    ttk.Button(ventana_lavadas, text="⬅ Volver al menú principal", command=volver).pack(pady=15)
 
 # ---------- Ventana principal ----------
 ventana = tk.Tk()
