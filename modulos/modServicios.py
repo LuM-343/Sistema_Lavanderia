@@ -130,7 +130,7 @@ def deshacerEliminacionServicio():
     servicio = serviciosEliminados.pop()
 
     insertarServicio(servicio)  # Volver a insertar el servicio a la base de datos
-    print("✅ Servicio restaurado desde la pila")
+    print("Servicio restaurado desde la pila")
 
 def insertarServicio(servicio):
     conn = sqlite3.connect("datos/lavanderia.db")
