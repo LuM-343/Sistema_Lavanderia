@@ -1,0 +1,48 @@
+import sqlite3
+
+def conectar():
+    print("Hola")
+    return sqlite3.connect("datos/lavanderia.db")
+
+def crear_tablas():
+    con = conectar()
+    cur = con.cursor()
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS clientes(
+        idCliente TEXT PRIMARY KEY,
+        nombre TEXT NOT NULL,
+        telefono INTEGER,
+        direccion TEXT,
+        extra TEXT,
+        servicios INTEGER DEFAULT 0
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS servicios(
+        idServicio TEXT PRIMARY KEY,
+        idCliente TEXT,
+        fecha TEXT,
+        precio REAL,
+        obs TEXT,
+        estado TEXT,
+        pago TEXT,
+        FOREIGN KEY(idCliente) REFERENCES clientes(idCliente)
+    )
+    """)
+
+    cur.execute("""
+    CREATE TABLE IF NOT EXISTS ingresosYegresos(
+        concepto TEXT,
+        ingreso REAL DEFAULT 0,
+        egreso REAL DEFAULT 0
+    )
+    """)
+
+    con.commit()
+    con.close()
+    print("✅ Tablas creadas")
+
+conectar()
+crear_tablas()
