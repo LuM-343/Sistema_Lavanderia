@@ -6,7 +6,7 @@ import modIngresosEgresos
 
 #listas provisionales
 servicios=[]
-
+serviciosEliminados=[] #Para poder volver si se borra algun servicio por error
 #Clase servicio
 
 class Servicio:
@@ -53,7 +53,7 @@ class Servicio:
         return f"{self.idServicio} | Cliente: {self.idCliente} | Fecha: {self.fecha} | Q{self.precio} | {self.estado}"
 
 
-def crearServicio():
+def crearServicio():        #Cambiar para que ya no use la lista temporal, si no que use la lista creada a partir de la base de datos de clientes
     try:
         if not modClientes.clientes:
             raise ValueError("Primero registra un cliente")
@@ -75,7 +75,6 @@ def crearServicio():
 
         servicio = Servicio(id, idCliente, now, precio, obs)
         servicios.append(servicio)
-
         modClientes.clientes[pos].servicios += 1
 
         print("\nServicio creado")
@@ -85,18 +84,53 @@ def crearServicio():
     except Exception as e:
         print("Error:", e)
 
-def eliminarUltimoServicio(): #Fila
-    if not servicios:
-        return None
-    ultimo = servicios.pop()
-    conn=sqlite3.connect("datos/lavanderia.db")
-    cursor=conn.cursor()
-    instruccion=f"DELETE from servicios WHERE idServicio={ultimo.idServicio}"
-    cursor.execute(instruccion)
+def eliminarServicio(idServicio):
+    conn = sqlite3.connect("datos/lavanderia.db")
+    cursor = conn.cursor()
+
+    cursor.execute("DELETE FROM servicios WHERE idServicio=?", (idServicio,))
     conn.commit()
     conn.close()
-    return ultimo
 
+    # Lista temporal
+    for s in servicios:
+        if s.idServicio == idServicio:
+            servicios.remove(s)
+            break
+
+    print("Servicio eliminado correctamente")
+
+def eliminarServicioConPila(idServicio):
+    # Obtener servicio antes de borrar
+    conn = sqlite3.connect("datos/lavanderia.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM servicios WHERE idServicio=?", (idServicio,))
+    dato = cur.fetchone()
+
+    if not dato:
+        print("Servicio no existe")
+        return
+    
+    # Guardarlo en pila PERO como tu objeto
+    servicio = Servicio(dato[0], dato[1], datetime.datetime.fromisoformat(dato[2]), dato[3], dato[4], dato[5], dato[6])
+    serviciosEliminados.append(servicio)
+
+    # Borrar en BD
+    cur.execute("DELETE FROM servicios WHERE idServicio=?", (idServicio,))
+    conn.commit()
+    conn.close()
+
+    print("Servicio eliminado y guardado en pila para un posible control Z")
+
+def deshacerEliminacionServicio():
+    if not serviciosEliminados:
+        print("No hay servicios para restaurar")
+        return
+    
+    servicio = serviciosEliminados.pop()
+
+    insertarServicio(servicio)  # Volver a insertar el servicio a la base de datos
+    print("✅ Servicio restaurado desde la pila")
 
 def insertarServicio(servicio):
     conn = sqlite3.connect("datos/lavanderia.db")
@@ -143,10 +177,28 @@ def listarServicios():
         print(s)
     print()
 
-def actualizarServicio(parte, cambio, idServicio):
-    conn =sqlite3.connect("datos/lavanderia.db")
-    cursor=conn.cursor()
-    instruccion=f"UPDATE servicios SET {parte}='{cambio}' WHERE idServicio='{idServicio}'"
-    cursor.execute(instruccion)
+def actualizarServicio(idServicio, estado=None, pago=None, obs=None):
+    conn = sqlite3.connect("datos/lavanderia.db")
+    cursor = conn.cursor()
+
+    if estado:
+        cursor.execute("UPDATE servicios SET estado=? WHERE idServicio=?", (estado, idServicio))
+
+    if pago:
+        cursor.execute("UPDATE servicios SET pago=? WHERE idServicio=?", (pago, idServicio))
+
+    if obs:
+        cursor.execute("UPDATE servicios SET obs=? WHERE idServicio=?", (obs, idServicio))
+
     conn.commit()
     conn.close()
+
+    # Actualizar lista temporal
+    for s in servicios:
+        if s.idServicio == idServicio:
+            if estado: s.estado = estado
+            if pago: s.pago = pago
+            if obs: s.obs = obs
+            break
+
+    print("Servicio actualizado")

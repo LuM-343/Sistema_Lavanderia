@@ -50,31 +50,32 @@ def crearCliente():
             print("Error:", e)
             print("Vuelve a intentarlo.")
 
-def actualizarCliente():
-    try:
-        print("\nClientes disponibles:")    #En esta parte lo mismo, seria mejor que muestre todos los clientes y seleccione
-        for c in clientes:                  #nada mas el que va a actualizar
-            print(c)
+def actualizarCliente(idCliente, nuevoTelefono=None, nuevaDireccion=None, nuevoExtra=None):
+    conn = sqlite3.connect("datos/lavanderia.db")
+    cursor = conn.cursor()
 
-        idCliente = input("Ingresa el ID del cliente: ").strip()
-        pos = utilidades.busquedaSecuencial(clientes, idCliente, "idCliente")
-        if pos == -1:
-            raise ValueError("ID de cliente no existe")
-        
-        nTelefono = int(input("ingresa el nuevo celular: "))
-        if not (10000000 <= nTelefono <= 99999999):
-            raise ValueError("Teléfono inválido")
-        
-        ndireccion= input("Ingresa la nueva dirección: ")
+    if nuevoTelefono is not None:
+        cursor.execute("UPDATE clientes SET telefono=? WHERE idCliente=?", (nuevoTelefono, idCliente))
 
-        if nTelefono!= clientes[pos].telefono or nTelefono!="":
-            actualizarCliente("telefono", nTelefono, clientes[pos].idCliente)
+    if nuevaDireccion is not None:
+        cursor.execute("UPDATE clientes SET direccion=? WHERE idCliente=?", (nuevaDireccion, idCliente))
 
-        if ndireccion!=clientes[pos].direccion or ndireccion!="":
-            actualizarCliente("direccion", ndireccion, clientes[pos].idClientes)
-    except Exception as e:
-            print("Error:", e)
-            print("Vuelve a intentarlo.")
+    if nuevoExtra is not None:
+        cursor.execute("UPDATE clientes SET extra=? WHERE idCliente=?", (nuevoExtra, idCliente))
+
+    conn.commit()
+    conn.close()
+
+
+    for c in clientes:
+        if c.idCliente == idCliente:
+            if nuevoTelefono: c.telefono = nuevoTelefono
+            if nuevaDireccion: c.direccion = nuevaDireccion
+            if nuevoExtra: c.extra = nuevoExtra
+            break
+
+    print("Cliente actualizado correctamente")
+
 
 def insertarCliente(cliente):
     conn = sqlite3.connect("datos/lavanderia.db")
@@ -86,13 +87,30 @@ def insertarCliente(cliente):
     conn.commit()
     conn.close()
 
-def actualizarCliente(parte, cambio, idCliente):
-    conn =sqlite3.connect("datos/lavanderia.db")
-    cursor=conn.cursor()
-    instruccion=f"UPDATE clientes SET {parte}='{cambio}' WHERE idCliente='{idCliente}'"
-    cursor.execute(instruccion)
+def eliminarCliente(idCliente):
+    conn = sqlite3.connect("datos/lavanderia.db")
+    cursor = conn.cursor()
+
+    # Verificar si tiene servicios asociados
+    cursor.execute("SELECT COUNT(*) FROM servicios WHERE idCliente=?", (idCliente,))
+    tieneServ = cursor.fetchone()[0]
+
+    if tieneServ > 0:
+        print("No se puede eliminar el cliente, tiene servicios registrados.")
+        conn.close()
+        return
+
+    cursor.execute("DELETE FROM clientes WHERE idCliente=?", (idCliente,))
     conn.commit()
     conn.close()
+
+    # Quitar de lista temporal
+    for c in clientes:
+        if c.idCliente == idCliente:
+            clientes.remove(c)
+            break
+
+    print("Cliente eliminado correctamente")
 
 def cargarClientes():
     """Carga todos los clientes desde SQLite y los mete a la lista clientes[]"""
