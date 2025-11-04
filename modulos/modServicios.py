@@ -2,6 +2,7 @@ import datetime, random
 import utilidades
 import sqlite3
 import modClientes
+import modIngresosEgresos
 
 #listas provisionales
 servicios=[]
@@ -29,7 +30,7 @@ class Servicio:
         print(f"Servicio con el id")
         if pagado:
             self.pago="Cancelado"
-            registrarIngreso(self.idServicio, self.precio)
+            modIngresosEgresos.registrarIngreso(self.idServicio, self.precio)
             actualizarServicio("pago",self.pago, self.idServicio)
             #Llamar a la función de registrar pago de una a la base de datos
         actualizarServicio("estado",self.estado, self.idServicio)
@@ -45,7 +46,7 @@ class Servicio:
 
     def cambiarPago(self):
         self.pago="Cancelado"
-        registrarIngreso(self.idServicio, self.precio)
+        modIngresosEgresos.registrarIngreso(self.idServicio, self.precio)
         actualizarServicio("pago",self.estado, self.idServicio)
 
     def __str__(self):
@@ -141,22 +142,6 @@ def listarServicios():
     for s in lista:
         print(s)
     print()
-
-def registrarIngreso(concepto, total):
-    conn = sqlite3.connect("datos/lavanderia.db")
-    cursor=conn.cursor()
-    instruccion= f"INSERT INTO ingresosYegresos VALUES ('{concepto}',{total}, {0} )"
-    cursor.execute(instruccion)
-    conn.commit()
-    conn.close()
-
-def registrarEgreso(concepto, total):
-    conn = sqlite3.connect("datos/lavanderia.db")
-    cursor=conn.cursor()
-    instruccion= f"INSERT INTO ingresosYegresos VALUES ('{concepto}',{0}, {total} )"
-    cursor.execute(instruccion)
-    conn.commit()
-    conn.close()
 
 def actualizarServicio(parte, cambio, idServicio):
     conn =sqlite3.connect("datos/lavanderia.db")
