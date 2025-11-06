@@ -174,23 +174,4 @@ def cargarClientes():
 
     return clientes
 
-def buscarClientePorNombre(nombre): #Se recomienda aplicar un .strip() y .title() porque asi se guardaron los nombres
-    cargarClientes()
-    cliente=utilidades.busquedaSecuencial(clientes, nombre, "nombre")
-    if cliente!=-1:
-        return cliente
-    else: return "Cliente no encontrado"
 
-#Busqueda de ID por HASH
-def busquedaID(idBuscar):
-    tabla = utilidades.crearHash(clientes, "idCliente")
-    cliente = utilidades.buscarHash(tabla, idBuscar)
-    if cliente:
-        print("Cliente encontrado:", cliente)
-    else:
-        print("Cliente no encontrado")
-
-def mostrarClientesOrdenados(caracteristica):
-    cargarClientes()
-    clientesOrdenados=utilidades.bubbleSort(clientes,caracteristica)
-    return clientesOrdenados    

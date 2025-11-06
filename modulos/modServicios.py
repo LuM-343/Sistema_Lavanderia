@@ -3,6 +3,10 @@ import modulos.utilidades as utilidades
 import sqlite3
 import modulos.modClientes as modClientes
 import modulos.modIngresosEgresos as modIngresosEgresos
+from collections import deque
+
+# Cola de servicios /lavadas pendientees
+colaServicios = []
 
 #listas provisionales
 servicios=[]
@@ -191,43 +195,18 @@ def actualizarServicio(idServicio, estado=None, pago=None, obs=None):
 
     print("Servicio actualizado")
 
-def buscarServicioPorID(idServicio):
+#COLA SERVICIOS, USAMOS BUBLE SORT
+def cargarColaPendientes(): #Cargar los servicios que aparecen como pendiente
+    global colaServicios
+    colaServicios.clear()
+
     conn = sqlite3.connect("lavanderia.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM servicios WHERE idServicio=?", (idServicio,))
-    dato = cursor.fetchone()
+    cur = conn.cursor()
+    cur.execute("SELECT idServicio, idCliente, fecha, precio, obs, estado, pago FROM servicios WHERE estado='Pendiente'")
+    datos = cur.fetchall()
     conn.close()
 
-    if not dato:
-        print("Servicio no encontrado.")
-        return None
-
-    servicio = Servicio(
-        idServicio=dato[0],
-        idCliente=dato[1],
-        fecha=datetime.datetime.fromisoformat(dato[2]),
-        precio=dato[3],
-        obs=dato[4],
-        estado=dato[5],
-        pago=dato[6]
-    )
-    print("\nServicio encontrado:")
-    print(servicio)
-    return servicio
-
-def filtrarServiciosPorEstado(estado):
-    conn = sqlite3.connect("lavanderia.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM servicios WHERE estado=?", (estado,))
-    datos = cursor.fetchall()
-    conn.close()
-
-    if not datos:
-        print(f"No hay servicios con estado '{estado}'.")
-        return []
-
-    print(f"\nServicios con estado '{estado}':")
-    resultados = [
+    colaServicios = [
         Servicio(
             idServicio=fila[0],
             idCliente=fila[1],
@@ -239,21 +218,13 @@ def filtrarServiciosPorEstado(estado):
         )
         for fila in datos
     ]
-    for s in resultados:
-        print(s)
-    return resultados
+    colaServicios=utilidades.bubbleSort(colaServicios, "fecha")
 
-def mostrarServiciosOrdenados(caracteristica):
-    cargarServicios()
-    serviciosOrdenados=utilidades.quick_sort(servicios,caracteristica)
-    return serviciosOrdenados
-
-# PARTE DE HASHING
-#Busqueda de ID por HASH
-def busquedaID(idBuscar):
-    tabla = utilidades.crearHash(servicios, "idServicio")
-    servicio = utilidades.buscarHash(tabla, idBuscar)
-    if servicio:
-        print("Servicio encontrado:", servicio)
-    else:
-        print("Servicio no encontrado")
+def mostrarCola(): #Mostrar el estado actual de la Cola
+    cargarColaPendientes()
+    if not colaServicios:
+        print("\nNo hay lavadas pendientes.")
+        return
+    print("\nLavadas pendientes:")
+    for i, s in enumerate(colaServicios, 1):
+        print(f"{i}. {s['idServicio']} - Cliente: {s['idCliente']} - Precio: Q{s['precio']} - Estado: {s['estado']}")
