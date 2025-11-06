@@ -55,7 +55,7 @@ def reporteClientes(periodo="mes"):
     conn.close()
     clientes, total = data
     return f"""
-👤 Reporte de Clientes ({'última semana' if periodo == 'semana' else 'último mes'}):
+Reporte de Clientes ({'última semana' if periodo == 'semana' else 'último mes'}):
 - Clientes atendidos: {clientes or 0}
 - Total facturado: Q{total or 0:.2f}
 """
@@ -79,13 +79,13 @@ def reporteIngresos(periodo="mes"):
     except Exception:
         ingresos, egresos, balance = (0, 0, 0)
     return f"""
-💰 Reporte Financiero ({'última semana' if periodo == 'semana' else 'último mes'}):
+Reporte Financiero ({'última semana' if periodo == 'semana' else 'último mes'}):
 - Ingresos: Q{ingresos or 0:.2f}
 - Egresos: Q{egresos or 0:.2f}
 - Balance: Q{balance or 0:.2f}
 """
 
-#Graficos bisuales
+#Graficos visuales
 def graficoLavadas(win, periodo="mes"):
     conn = conectar()
     cur = conn.cursor()
@@ -165,7 +165,7 @@ def exportarExcel():
             df.to_excel(writer, sheet_name=nombre, index=False)
 
     conn.close()
-    print(f"✅ Reporte generado exitosamente: {nombreArchivo}")
+    print(f"Reporte generado exitosamente: {nombreArchivo}")
     os.startfile(nombreArchivo) 
 
     return nombreArchivo
