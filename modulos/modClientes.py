@@ -150,3 +150,8 @@ def busquedaID(idBuscar):
         print("Cliente encontrado:", cliente)
     else:
         print("Cliente no encontrado")
+
+def mostrarClientesOrdenados(caracteristica):
+    cargarClientes()
+    clientesOrdenados=utilidades.bubbleSort(clientes,caracteristica)
+    return clientesOrdenados    
