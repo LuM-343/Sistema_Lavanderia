@@ -165,18 +165,6 @@ def cargarServicios():
 
     return servicios
 
-def listarServicios():
-    lista = cargarServicios()
-
-    print("\nLista de Servicios:")
-    if not lista:
-        print("No hay servicios registrados.\n")
-        return
-
-    for s in lista:
-        print(s)
-    print()
-
 def actualizarServicio(idServicio, estado=None, pago=None, obs=None):
     conn = sqlite3.connect("lavanderia.db")
     cursor = conn.cursor()
@@ -254,3 +242,18 @@ def filtrarServiciosPorEstado(estado):
     for s in resultados:
         print(s)
     return resultados
+
+def mostrarServiciosOrdenados(caracteristica):
+    cargarServicios()
+    serviciosOrdenados=utilidades.quick_sort(servicios,caracteristica)
+    return serviciosOrdenados
+
+# PARTE DE HASHING
+#Busqueda de ID por HASH
+def busquedaID(idBuscar):
+    tabla = utilidades.crearHash(servicios, "idServicio")
+    servicio = utilidades.buscarHash(tabla, idBuscar)
+    if servicio:
+        print("Servicio encontrado:", servicio)
+    else:
+        print("Servicio no encontrado")

@@ -1,6 +1,6 @@
 import datetime, random
 import sqlite3
-import modulos.utilidades
+import modulos.utilidades as utilidades
 
 clientes=[]
 class Cliente:
@@ -135,35 +135,18 @@ def cargarClientes():
 
     return clientes
 
-def buscarClientePorID(idCliente):
-    conn = sqlite3.connect("lavanderia.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM clientes WHERE idCliente=?", (idCliente,))
-    dato = cursor.fetchone()
-    conn.close()
+def buscarClientePorNombre(nombre): #Se recomienda aplicar un .strip() y .title() porque asi se guardaron los nombres
+    cargarClientes()
+    cliente=utilidades.busquedaSecuencial(clientes, nombre, "nombre")
+    if cliente!=-1:
+        return cliente
+    else: return "Cliente no encontrado"
 
-    if not dato:
-        print("❌ No se encontró el cliente.")
-        return None
-
-    cliente = Cliente(*dato)
-    print("\n✅ Cliente encontrado:")
-    print(cliente)
-    return cliente
-
-def buscarClientePorNombre(nombre):
-    conn = sqlite3.connect("lavanderia.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM clientes WHERE nombre LIKE ?", (f"%{nombre}%",))
-    datos = cursor.fetchall()
-    conn.close()
-
-    if not datos:
-        print("❌ No se encontraron coincidencias.")
-        return []
-
-    print(f"\n✅ Resultados para '{nombre}':")
-    resultados = [Cliente(*fila) for fila in datos]
-    for c in resultados:
-        print(c)
-    return resultados
+#Busqueda de ID por HASH
+def busquedaID(idBuscar):
+    tabla = utilidades.crearHash(clientes, "idCliente")
+    cliente = utilidades.buscarHash(tabla, idBuscar)
+    if cliente:
+        print("Cliente encontrado:", cliente)
+    else:
+        print("Cliente no encontrado")
