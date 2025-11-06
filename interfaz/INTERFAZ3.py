@@ -9,9 +9,9 @@ from tkinter import ttk, messagebox
 from datetime import datetime
 import sqlite3
 
-import backend.modClientes as modClientes
-import backend.modServicios as modServicios
-import backend.database as database
+import modulos.modClientes as modClientes
+import modulos.modServicios as modServicios
+import modulos.database as database
 
 # ------------------------------------------------------------
 # CONFIGURACIÓN DE ESTILO GLOBAL Y COLORES

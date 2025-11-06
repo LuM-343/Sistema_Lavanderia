@@ -1,8 +1,8 @@
 import datetime, random
-import utilidades
+import modulos.utilidades as utilidades
 import sqlite3
-import modClientes
-import modIngresosEgresos
+import modulos.modClientes as modClientes
+import modulos.modIngresosEgresos as modIngresosEgresos
 
 #listas provisionales
 servicios=[]
@@ -85,7 +85,7 @@ def crearServicio():        #Cambiar para que ya no use la lista temporal, si no
         print("Error:", e)
 
 def eliminarServicio(idServicio):
-    conn = sqlite3.connect("datos/lavanderia.db")
+    conn = sqlite3.connect("lavanderia.db")
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM servicios WHERE idServicio=?", (idServicio,))
@@ -102,7 +102,7 @@ def eliminarServicio(idServicio):
 
 def eliminarServicioConPila(idServicio):
     # Obtener servicio antes de borrar
-    conn = sqlite3.connect("datos/lavanderia.db")
+    conn = sqlite3.connect("lavanderia.db")
     cur = conn.cursor()
     cur.execute("SELECT * FROM servicios WHERE idServicio=?", (idServicio,))
     dato = cur.fetchone()
@@ -133,7 +133,7 @@ def deshacerEliminacionServicio():
     print("Servicio restaurado desde la pila")
 
 def insertarServicio(servicio):
-    conn = sqlite3.connect("datos/lavanderia.db")
+    conn = sqlite3.connect("lavanderia.db")
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO servicios (idServicio,idCliente,fecha,precio,obs,estado,pago)
@@ -145,7 +145,7 @@ def insertarServicio(servicio):
 def cargarServicios():
     servicios.clear()
 
-    conn = sqlite3.connect("datos/lavanderia.db")
+    conn = sqlite3.connect("lavanderia.db")
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM servicios")
     registros = cursor.fetchall()
@@ -178,7 +178,7 @@ def listarServicios():
     print()
 
 def actualizarServicio(idServicio, estado=None, pago=None, obs=None):
-    conn = sqlite3.connect("datos/lavanderia.db")
+    conn = sqlite3.connect("lavanderia.db")
     cursor = conn.cursor()
 
     if estado:
@@ -202,3 +202,55 @@ def actualizarServicio(idServicio, estado=None, pago=None, obs=None):
             break
 
     print("Servicio actualizado")
+
+def buscarServicioPorID(idServicio):
+    conn = sqlite3.connect("lavanderia.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM servicios WHERE idServicio=?", (idServicio,))
+    dato = cursor.fetchone()
+    conn.close()
+
+    if not dato:
+        print("Servicio no encontrado.")
+        return None
+
+    servicio = Servicio(
+        idServicio=dato[0],
+        idCliente=dato[1],
+        fecha=datetime.datetime.fromisoformat(dato[2]),
+        precio=dato[3],
+        obs=dato[4],
+        estado=dato[5],
+        pago=dato[6]
+    )
+    print("\nServicio encontrado:")
+    print(servicio)
+    return servicio
+
+def filtrarServiciosPorEstado(estado):
+    conn = sqlite3.connect("lavanderia.db")
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM servicios WHERE estado=?", (estado,))
+    datos = cursor.fetchall()
+    conn.close()
+
+    if not datos:
+        print(f"No hay servicios con estado '{estado}'.")
+        return []
+
+    print(f"\nServicios con estado '{estado}':")
+    resultados = [
+        Servicio(
+            idServicio=fila[0],
+            idCliente=fila[1],
+            fecha=datetime.datetime.fromisoformat(fila[2]),
+            precio=fila[3],
+            obs=fila[4],
+            estado=fila[5],
+            pago=fila[6]
+        )
+        for fila in datos
+    ]
+    for s in resultados:
+        print(s)
+    return resultados
