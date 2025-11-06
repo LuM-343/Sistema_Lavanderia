@@ -1,10 +1,11 @@
 import sqlite3
 
 def conectar():
-    print("Hola")
-    return sqlite3.connect("datos/lavanderia.db")
+    """Conecta con la base de datos principal."""
+    return sqlite3.connect("lavanderia.db")
 
 def crear_tablas():
+    """Crea las tablas necesarias si no existen."""
     con = conectar()
     cur = con.cursor()
 
@@ -42,7 +43,4 @@ def crear_tablas():
 
     con.commit()
     con.close()
-    print("✅ Tablas creadas")
-
-conectar()
-crear_tablas()
+    print("✅ Tablas creadas correctamente")
