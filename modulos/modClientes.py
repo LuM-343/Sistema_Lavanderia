@@ -3,6 +3,7 @@ import sqlite3
 import modulos.utilidades as utilidades
 
 clientes=[]
+clientesEliminados=[]
 class Cliente:
     def __init__(self, idCliente, nombre, telefono, direccion, extra="", servicios=0):
         self.idCliente = idCliente
@@ -111,6 +112,44 @@ def eliminarCliente(idCliente):
             break
 
     print("Cliente eliminado correctamente")
+
+def eliminarClienteConPila(idServicio):
+    # Obtener cliente antes de borrar
+    conn = sqlite3.connect("lavanderia.db")
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM clientes WHERE idCliente=?", (idServicio,))
+    dato = cur.fetchone()
+    tieneServ = cur.fetchone()[0]
+
+    if not dato:
+        print("Clientes no existe")
+        return
+    elif tieneServ > 0:
+        print("No se puede eliminar el cliente, tiene servicios registrados.")
+        conn.close()
+        return
+    
+    # Guardarlo en pila PERO como tu objeto
+    cliente = Cliente(dato[0], dato[1], (dato[2]), dato[3], dato[4], dato[5])
+    clientesEliminados.append(cliente)
+
+    # Borrar en BD
+    cur.execute("DELETE FROM clientes WHERE idCliente=?", (idServicio,))
+    conn.commit()
+    conn.close()
+
+    print("Cliente eliminado y guardado en pila para un posible control Z")
+
+def deshacerEliminacionCliente():
+    if not clientesEliminados:
+        print("No hay clientes para restaurar")
+        return
+    
+    cliente = clientesEliminados.pop()
+
+    insertarCliente(cliente)  # Volver a insertar el cliente a la base de datos
+    print("cliente restaurado desde la pila")
+
 
 def cargarClientes():
     """Carga todos los clientes desde SQLite y los mete a la lista clientes[]"""
