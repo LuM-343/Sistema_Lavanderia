@@ -3,7 +3,6 @@ import modulos.utilidades as utilidades
 import sqlite3
 import modulos.modClientes as modClientes
 import modulos.modIngresosEgresos as modIngresosEgresos
-from collections import deque
 
 # Cola de servicios /lavadas pendientees
 colaServicios = []
@@ -219,6 +218,7 @@ def cargarColaPendientes(): #Cargar los servicios que aparecen como pendiente
         for fila in datos
     ]
     colaServicios=utilidades.bubbleSort(colaServicios, "fecha")
+    colaServicios.reverse()
 
 def mostrarCola(): #Mostrar el estado actual de la Cola
     cargarColaPendientes()
